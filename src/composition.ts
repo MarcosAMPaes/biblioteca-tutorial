@@ -1,11 +1,25 @@
+import { AcervoComoConsulta } from "./adapters/AcervoComoConsulta";
+import { AcervoComoExemplares } from "./adapters/AcervoComoExemplares";
 import { AutoriaComoConsulta } from "./adapters/AutoriaComoConsulta";
 import {
   BuscarLivro,
   CadastrarLivro,
+  DarBaixa,
+  type LivroBaixado,
   type LivroCatalogado,
   SqliteLivroRepository,
 } from "./modules/acervo";
-import { ProjecaoDeLivros, SqliteAutorRepository } from "./modules/autoria";
+import {
+  CadastrarAutor,
+  ConsultarAutor,
+  ProjecaoDeLivros,
+  SqliteAutorRepository,
+} from "./modules/autoria";
+import {
+  DevolverLivro,
+  EmprestarLivro,
+  SqliteEmprestimoRepository,
+} from "./modules/circulacao";
 import type { Clock } from "./shared/Clock";
 import { EventBus } from "./shared/EventBus";
 import { AutorId } from "./shared/identifiers";
@@ -13,17 +27,25 @@ import { AutorId } from "./shared/identifiers";
 export type UseCases = {
   cadastrarLivro: CadastrarLivro;
   buscarLivro: BuscarLivro;
+  darBaixa: DarBaixa;
+  cadastrarAutor: CadastrarAutor;
+  consultarAutor: ConsultarAutor;
+  emprestarLivro: EmprestarLivro;
+  devolverLivro: DevolverLivro;
 };
 
 /**
  * Composition root: este é o ÚNICO lugar do sistema que sabe, ao mesmo tempo,
  * que existem casos de uso e que existe SQLite. Trocar de banco é trocar as
- * duas linhas de `new Sqlite...` daqui.
+ * três linhas de `new Sqlite...` daqui.
  */
 export function buildUseCases(now: Clock = () => new Date()): UseCases {
   const livros = new SqliteLivroRepository();
   const autores = new SqliteAutorRepository();
+  const emprestimos = new SqliteEmprestimoRepository();
   const autoria = new AutoriaComoConsulta(autores);
+  const acervo = new AcervoComoConsulta(livros);
+  const exemplares = new AcervoComoExemplares(livros);
   const bus = new EventBus();
   const projecao = new ProjecaoDeLivros(autores);
 
@@ -31,8 +53,17 @@ export function buildUseCases(now: Clock = () => new Date()): UseCases {
     projecao.registrarEntrada(new AutorId(event.autorId)),
   );
 
+  bus.subscribe<LivroBaixado>("LivroBaixado", (event) =>
+    projecao.registrarSaida(new AutorId(event.autorId)),
+  );
+
   return {
     cadastrarLivro: new CadastrarLivro(livros, autoria, now, bus),
     buscarLivro: new BuscarLivro(livros, autoria),
+    darBaixa: new DarBaixa(livros, autoria, now, bus),
+    cadastrarAutor: new CadastrarAutor(autores),
+    consultarAutor: new ConsultarAutor(autores, acervo),
+    emprestarLivro: new EmprestarLivro(emprestimos, exemplares, now),
+    devolverLivro: new DevolverLivro(emprestimos, exemplares, now),
   };
 }

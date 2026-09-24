@@ -21,3 +21,6 @@ export class LivroId extends Identifier {}
 
 /** Identidade que o sistema atribui — pelo mesmo motivo. */
 export class AutorId extends Identifier {}
+
+/** A Circulação também atribui a sua. */
+export class EmprestimoId extends Identifier {}
