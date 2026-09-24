@@ -85,6 +85,17 @@ export class Livro {
     );
   }
 
+  comTitulo(titulo: string): Livro {
+    return new Livro(
+      this.id,
+      this.numeroRegistro,
+      this.isbn,
+      titulo,
+      this.autorId,
+      this.dataCatalogacao,
+    );
+  }
+
   /** "Estar no acervo" é decisão do negócio, não um `WHERE` perdido numa query. */
   estaNoAcervo(): boolean {
     return this.baixa === null;

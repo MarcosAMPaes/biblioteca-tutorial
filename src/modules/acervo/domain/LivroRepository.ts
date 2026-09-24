@@ -1,4 +1,4 @@
-import type { AutorId } from "../../../shared/identifiers";
+import type { AutorId, LivroId } from "../../../shared/identifiers";
 import type { Isbn } from "./Isbn";
 import type { Livro } from "./Livro";
 import type { NumeroRegistro } from "./NumeroRegistro";
@@ -21,4 +21,6 @@ export interface LivroRepository {
 
   /** Grava a baixa que a entidade já decidiu. Não decide nada. */
   registrarBaixa(livro: Livro): void;
+  findById(id: LivroId): Livro | null;
+  updateTitulo(livro: Livro): void;
 }

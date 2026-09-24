@@ -9,12 +9,15 @@ import {
   type LivroCatalogado,
   SqliteLivroRepository,
 } from "./modules/acervo";
+import { CorrigirTitulo } from "./modules/acervo/features/corrigir-titulo/CorrigirTitulo";
 import {
   CadastrarAutor,
   ConsultarAutor,
   ProjecaoDeLivros,
   SqliteAutorRepository,
 } from "./modules/autoria";
+import { RegistrarAvaliacao } from "./modules/avaliacao/features/cadastrar-avaliacao/CadastrarAvaliacao";
+import { SqliteAvaliacaoRepository } from "./modules/avaliacao/infrastructure/SqliteAvaliacaoRepository";
 import {
   DevolverLivro,
   EmprestarLivro,
@@ -25,6 +28,8 @@ import { EventBus } from "./shared/EventBus";
 import { AutorId } from "./shared/identifiers";
 
 export type UseCases = {
+  registrarAvaliacao: RegistrarAvaliacao;
+  corrigirTitulo: CorrigirTitulo;
   cadastrarLivro: CadastrarLivro;
   buscarLivro: BuscarLivro;
   darBaixa: DarBaixa;
@@ -43,6 +48,7 @@ export function buildUseCases(now: Clock = () => new Date()): UseCases {
   const livros = new SqliteLivroRepository();
   const autores = new SqliteAutorRepository();
   const emprestimos = new SqliteEmprestimoRepository();
+  const avaliacoes = new SqliteAvaliacaoRepository();
   const autoria = new AutoriaComoConsulta(autores);
   const acervo = new AcervoComoConsulta(livros);
   const exemplares = new AcervoComoExemplares(livros);
@@ -58,6 +64,8 @@ export function buildUseCases(now: Clock = () => new Date()): UseCases {
   );
 
   return {
+    registrarAvaliacao: new RegistrarAvaliacao(avaliacoes, livros),
+    corrigirTitulo: new CorrigirTitulo(livros),
     cadastrarLivro: new CadastrarLivro(livros, autoria, now, bus),
     buscarLivro: new BuscarLivro(livros, autoria),
     darBaixa: new DarBaixa(livros, autoria, now, bus),

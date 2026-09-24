@@ -44,6 +44,10 @@ function toResumo(livro: Livro): ResumoDoLivro {
 export class SqliteLivroRepository
   implements LivroRepository, ConsultaDeLivros
 {
+  existeNumeroRegistro(numeroRegistro: string): boolean {
+    return db.query("SELECT 1 FROM livros WHERE numero_registro = ?")
+      .get(numeroRegistro) !== null;
+  }
   contarCatalogadosNoAno(ano: string): number {
     const row = db
       .query(
@@ -130,6 +134,19 @@ export class SqliteLivroRepository
     db.run("UPDATE livros SET baixa_motivo = ?, baixa_em = ? WHERE id = ?", [
       livro.baixa!.motivo,
       livro.baixa!.em,
+      livro.id!.value,
+    ]);
+  }
+
+  findById(id: LivroId): Livro | null {
+    const row = db.query("SELECT * FROM livros WHERE id = ?")
+      .get(id.value) as LivroRow | null;
+    return row === null ? null : toLivro(row);
+  }
+
+  updateTitulo(livro: Livro): void {
+    db.run("UPDATE livros SET titulo = ? WHERE id = ?", [
+      livro.titulo,
       livro.id!.value,
     ]);
   }

@@ -26,6 +26,15 @@ import type { Emprestimo } from "../src/modules/circulacao/domain/Emprestimo";
 import type { EmprestimoRepository } from "../src/modules/circulacao/domain/EmprestimoRepository";
 
 export class InMemoryLivroRepository implements LivroRepository {
+  findById(id: LivroId): Livro | null {
+    return this.items.find((livro) => livro.id?.equals(id)) ?? null;
+  }
+
+  updateTitulo(livro: Livro): void {
+    this.items = this.items.map((atual) =>
+      atual.id?.equals(livro.id!) ? livro : atual,
+    );
+  }
   private items: Livro[] = [];
   private nextId = 1;
 

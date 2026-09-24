@@ -16,3 +16,4 @@ export class AcervoComoConsulta implements ConsultaDeAcervo {
       .map((livro) => ({ titulo: livro.titulo, isbn: livro.isbn }));
   }
 }
+
